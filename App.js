@@ -35,6 +35,7 @@ function tabOption(authCtx, tabLabel, iconLabel) {
 		tabBarIcon: ({ tintColor }) => (
 			<IconButton icon={iconLabel} color={tintColor} size={20} />
 		),
+		presentation: 'modal',
 		headerRight: ({ tintColor }) => (
 			<IconButton
 				icon="exit"
@@ -72,6 +73,7 @@ function AuthenticatedStack() {
 				name="Profile"
 				component={ProfileScreen}
 				options={tabOption(authCtx, 'Profile', 'person')}
+				initialRouteName='Profile'
 			/>
 		</Tab.Navigator>
 	);
