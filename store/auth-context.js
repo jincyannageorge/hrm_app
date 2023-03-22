@@ -19,13 +19,13 @@ function AuthContextProvider({ children }) {
 	}
 
 	function logout() {
-		const [currentUser, setCurrentUser] = useState('');
-		AsyncStorage.getItem("logged_user_id").then(user => {
-			setCurrentUser(JSON.parse(user));
-		});
+		// const [currentUser, setCurrentUser] = useState('');
+		// AsyncStorage.getItem("logged_user_id").then(user => {
+		// 	setCurrentUser(JSON.parse(user));
+		// });
 		setAuthToken(null);
 		AsyncStorage.removeItem('token');
-		helpers.fetchDataWithHeaders('POST', 'logout', { 'user_id': currentUser });
+		// helpers.fetchDataWithHeaders('POST', 'logout', { 'user_id': currentUser });
 	}
 
 	const value = {

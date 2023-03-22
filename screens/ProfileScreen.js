@@ -1,95 +1,117 @@
-import { View, Text, StyleSheet, SafeAreaView, Image, Pressable } from 'react-native';
-import Icon from '../components/ui/IconButton';
+import React, { useContext, useState, useEffect } from 'react';
+import { ActivityIndicator, View, Text, StyleSheet, SafeAreaView, Image, Pressable, ScrollView } from 'react-native';
+import { AuthContext } from '../store/auth-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 import LoadingOverlay from '../components/ui/LoadingOverlay';
-import helpers from '../constants/helpers';
+import Toast from 'react-native-simple-toast';
+import { BASE_URL } from '../constants/helpers';
+import { ERROR_MSG } from '../constants/helpers';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
-function Profile() {
-    const response = helpers.fetchDataWithHeaders('POST', 'profile');
-    return <LoadingOverlay message="" />;
-    // return (
-    //     <SafeAreaView style={styles.container}>
+const Tab = createMaterialTopTabNavigator();
+function Profile({ navigation }) {
+    const [isLoading, setIsLoading] = useState(true);
+    const [data, setData] = useState([]);
+    const authCtx = useContext(AuthContext);
+    const [name, setFullName] = useState('');
+    const [userToken, setUserToken] = useState('');
 
-    //         <View style={styles.userInfoSection}>
-    //             <View style={{ flexDirection: 'row', marginTop: 15 }}>
-    //                 <Image
-    //                     source={{
-    //                         uri: 'https://api.adorable.io/avatars/80/abott@adorable.png',
-    //                     }}
-    //                     size={80}
-    //                 />
-    //                 <View style={{ marginLeft: 20 }}>
-    //                     <Text style={[styles.title, {
-    //                         marginTop: 15,
-    //                         marginBottom: 5,
-    //                     }]}>John Doe</Text>
-    //                     <Text style={styles.caption}>@j_doe</Text>
-    //                 </View>
-    //             </View>
-    //         </View>
+    AsyncStorage.getItem("logged_user_token").then(token => {
+        setUserToken(JSON.parse(token));
+    });
 
-    //         <View style={styles.userInfoSection}>
-    //             <View style={styles.row}>
-    //                 <Icon name="map-marker-radius" color="#777777" size={20} />
-    //                 <Text style={{ color: "#777777", marginLeft: 20 }}>Kolkata, India</Text>
-    //             </View>
-    //             <View style={styles.row}>
-    //                 <Icon name="phone" color="#777777" size={20} />
-    //                 <Text style={{ color: "#777777", marginLeft: 20 }}>+91-900000009</Text>
-    //             </View>
-    //             <View style={styles.row}>
-    //                 <Icon name="email" color="#777777" size={20} />
-    //                 <Text style={{ color: "#777777", marginLeft: 20 }}>john_doe@email.com</Text>
-    //             </View>
-    //         </View>
+    const [images, setImages] = useState([
+        'https://www.bootdey.com/image/280x280/FF00FF/000000',
+        'https://www.bootdey.com/image/280x280/00FFFF/000000',
+        'https://www.bootdey.com/image/280x280/FF7F50/000000',
+        'https://www.bootdey.com/image/280x280/6495ED/000000',
+        'https://www.bootdey.com/image/280x280/DC143C/000000',
+        'https://www.bootdey.com/image/280x280/008B8B/000000',
+    ]);
 
-    //         <View style={styles.infoBoxWrapper}>
-    //             <View style={[styles.infoBox, {
-    //                 borderRightColor: '#dddddd',
-    //                 borderRightWidth: 1
-    //             }]}>
-    //                 <Text>₹140.50</Text>
-    //                 <Text>Wallet</Text>
-    //             </View>
-    //             <View style={styles.infoBox}>
-    //                 <Text>12</Text>
-    //                 <Text>Orders</Text>
-    //             </View>
-    //         </View>
+    const [postCount, setPostCount] = useState(10);
+    const [followingCount, setFollowingCount] = useState(20);
+    const [followerCount, setFollowerCount] = useState(30);
 
-    //         <View style={styles.menuWrapper}>
-    //             <Pressable onPress={() => { }}>
-    //                 <View style={styles.menuItem}>
-    //                     <Icon name="heart-outline" color="#FF6347" size={25} />
-    //                     <Text style={styles.menuItemText}>Your Favorites</Text>
-    //                 </View>
-    //             </Pressable>
-    //             <Pressable onPress={() => { }}>
-    //                 <View style={styles.menuItem}>
-    //                     <Icon name="credit-card" color="#FF6347" size={25} />
-    //                     <Text style={styles.menuItemText}>Payment</Text>
-    //                 </View>
-    //             </Pressable>
-    //             <Pressable onPress={() => { }}>
-    //                 <View style={styles.menuItem}>
-    //                     <Icon name="share-outline" color="#FF6347" size={25} />
-    //                     <Text style={styles.menuItemText}>Tell Your Friends</Text>
-    //                 </View>
-    //             </Pressable>
-    //             <Pressable onPress={() => { }}>
-    //                 <View style={styles.menuItem}>
-    //                     <Icon name="account-check-outline" color="#FF6347" size={25} />
-    //                     <Text style={styles.menuItemText}>Support</Text>
-    //                 </View>
-    //             </Pressable>
-    //             <Pressable onPress={() => { }}>
-    //                 <View style={styles.menuItem}>
-    //                     <Icon name="settings-outline" color="#FF6347" size={25} />
-    //                     <Text style={styles.menuItemText}>Settings</Text>
-    //                 </View>
-    //             </Pressable>
-    //         </View>
-    //     </SafeAreaView>
-    // );
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const response = await fetch(`${BASE_URL}profile`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + userToken,
+                        'Content-Type': 'application/json',
+                        'token': userToken
+                    }
+                });
+                const output = await response.json();
+                if (output) {
+                    // console.log('response', output);
+                    if (output.status === "failed") {
+                        AsyncStorage.removeItem('token');
+                        authCtx.logout;
+                    } else {
+                        setData(output.data);
+                        setIsLoading(false);
+                    }
+                }
+
+            } catch (error) {
+                Toast.show(ERROR_MSG, Toast.LONG);
+                AsyncStorage.removeItem('token');
+                authCtx.logout;
+            }
+        }
+        fetchData();
+    }, []);
+    return (
+        (isLoading ? (
+            <View style={styles.container}>
+                <LoadingOverlay />
+            </View>
+        ) : (
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <View style={styles.headerContent}>
+                        <Image style={styles.avatar} source={{ uri: data.employee.img_url }} />
+                        <Text style={styles.name}>{data.employee.full_name}</Text>
+                        <Text style={styles.contact}>
+                            <Ionicons name="mail-outline" color="grey" size={15} /> {data.employee.email}
+                        </Text>
+                        <Text style={styles.contact}>
+                            <Ionicons name="call-outline" color="grey" size={15} /><Text style={styles.textPadding}>{data.employee.phone.includes('+') ? data.employee.phone : '+' + data.employee.phone}</Text>
+                            <Ionicons name="logo-whatsapp" color="grey" size={15} /><Text style={styles.textPadding}>{data.employee.whatsapp.includes('+') ? data.employee.whatsapp : '+' + data.employee.whatsapp}</Text>
+                        </Text>
+                        {/* <View style={styles.statsContainer}>
+                            <View style={styles.statsBox}>
+                                <Text style={styles.statsCount}></Text>
+                                <Text style={styles.statsLabel}></Text>
+                            </View>
+                            <View style={styles.statsBox}>
+                                <Text style={styles.statsCount}></Text>
+                                <Text style={styles.statsLabel}></Text>
+                            </View>
+                            <View style={styles.statsBox}>
+                                <Text style={styles.statsCount}></Text>
+                                <Text style={styles.statsLabel}></Text>
+                            </View>
+                        </View> */}
+                    </View>
+                </View>
+                <View>
+
+                </View>
+                <ScrollView contentContainerStyle={styles.body}>
+                    {images.map((image, index) => (
+                        <View key={index} style={styles.imageContainer}>
+                            <Image style={styles.image} source={{ uri: image }} />
+                        </View>
+                    ))}
+                </ScrollView>
+            </View>
+        ))
+    );
 }
 
 export default Profile;
@@ -98,49 +120,65 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    userInfoSection: {
-        paddingHorizontal: 30,
-        marginBottom: 25,
+    header: {
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        padding: 20,
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
+    headerContent: {
+        alignItems: 'center',
     },
-    caption: {
-        fontSize: 14,
-        lineHeight: 14,
-        fontWeight: '500',
-    },
-    row: {
-        flexDirection: 'row',
+    avatar: {
+        width: 130,
+        height: 130,
+        borderRadius: 63,
+        borderWidth: 4,
+        borderColor: 'white',
         marginBottom: 10,
     },
-    infoBoxWrapper: {
-        borderBottomColor: '#dddddd',
-        borderBottomWidth: 1,
-        borderTopColor: '#dddddd',
-        borderTopWidth: 1,
+    textPadding: {
+        padding: 10,
+    },
+    name: {
+        fontSize: 22,
+        color: '#000000',
+        fontWeight: '600',
+        marginBottom: 5,
+    },
+    contact: {
+        fontSize: 15,
+        color: '#000000',
+        marginBottom: 5,
+    },
+    statsContainer: {
         flexDirection: 'row',
-        height: 100,
-    },
-    infoBox: {
-        width: '50%',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    menuWrapper: {
         marginTop: 10,
     },
-    menuItem: {
-        flexDirection: 'row',
-        paddingVertical: 15,
-        paddingHorizontal: 30,
+    statsBox: {
+        alignItems: 'center',
+        marginHorizontal: 10,
     },
-    menuItemText: {
-        color: '#777777',
-        marginLeft: 20,
+    statsCount: {
+        fontSize: 18,
         fontWeight: '600',
-        fontSize: 16,
-        lineHeight: 26,
+        color: '#000000',
+    },
+    statsLabel: {
+        fontSize: 14,
+        color: '#999999',
+    },
+    body: {
+        alignItems: 'center',
+        padding: 30,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+    imageContainer: {
+        width: '33%',
+        padding: 5,
+    },
+    image: {
+        width: '100%',
+        height: 120,
     },
 });

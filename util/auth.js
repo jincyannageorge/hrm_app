@@ -1,6 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import helpers from '../constants/helpers';
+import { loggedUserToken } from '../constants/helpers';
+import { loggedUserId } from '../constants/helpers';
+import { loggedUserName } from '../constants/helpers';
+import { loggedUserFullName } from '../constants/helpers';
 
 async function authenticate(mode, email, password) {
 	const url = `http://hrm.nuroil.com/api/login`;
@@ -15,10 +18,10 @@ async function authenticate(mode, email, password) {
 		full_name = response.data.data.full_name,
 		user_id = response.data.data.user_id;
 
-	helpers.loggedUserId(user_id);
-	helpers.loggedUserName(user_name);
-	helpers.loggedUserFullName(full_name);
-	helpers.loggedUserToken(token);
+	loggedUserToken(token);
+	loggedUserId(user_id);
+	loggedUserName(user_name);
+	loggedUserFullName(full_name);
 
 	return token;
 }
