@@ -7,9 +7,11 @@ import LoadingOverlay from '../components/ui/LoadingOverlay';
 import Toast from 'react-native-simple-toast';
 import { BASE_URL } from '../constants/helpers';
 import { ERROR_MSG } from '../constants/helpers';
+import DocumentScreen from './DocumentScreen';
+import { Colors } from '../constants/styles';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
-const Tab = createMaterialTopTabNavigator();
+const TopTab = createMaterialTopTabNavigator();
 function Profile({ navigation }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState([]);
@@ -30,10 +32,6 @@ function Profile({ navigation }) {
         'https://www.bootdey.com/image/280x280/008B8B/000000',
     ]);
 
-    const [postCount, setPostCount] = useState(10);
-    const [followingCount, setFollowingCount] = useState(20);
-    const [followerCount, setFollowerCount] = useState(30);
-
     useEffect(() => {
         async function fetchData() {
             try {
@@ -49,8 +47,8 @@ function Profile({ navigation }) {
                 if (output) {
                     // console.log('response', output);
                     if (output.status === "failed") {
-                        AsyncStorage.removeItem('token');
-                        authCtx.logout;
+                        // AsyncStorage.removeItem('token');
+                        // authCtx.logout;
                     } else {
                         setData(output.data);
                         setIsLoading(false);
@@ -59,8 +57,8 @@ function Profile({ navigation }) {
 
             } catch (error) {
                 Toast.show(ERROR_MSG, Toast.LONG);
-                AsyncStorage.removeItem('token');
-                authCtx.logout;
+                // AsyncStorage.removeItem('token');
+                // authCtx.logout;
             }
         }
         fetchData();
@@ -76,40 +74,43 @@ function Profile({ navigation }) {
                     <View style={styles.headerContent}>
                         <Image style={styles.avatar} source={{ uri: data.employee.img_url }} />
                         <Text style={styles.name}>{data.employee.full_name}</Text>
-                        <Text style={styles.contact}>
-                            <Ionicons name="mail-outline" color="grey" size={15} /> {data.employee.email}
-                        </Text>
-                        <Text style={styles.contact}>
-                            <Ionicons name="call-outline" color="grey" size={15} /><Text style={styles.textPadding}>{data.employee.phone.includes('+') ? data.employee.phone : '+' + data.employee.phone}</Text>
-                            <Ionicons name="logo-whatsapp" color="grey" size={15} /><Text style={styles.textPadding}>{data.employee.whatsapp.includes('+') ? data.employee.whatsapp : '+' + data.employee.whatsapp}</Text>
-                        </Text>
-                        {/* <View style={styles.statsContainer}>
-                            <View style={styles.statsBox}>
-                                <Text style={styles.statsCount}></Text>
-                                <Text style={styles.statsLabel}></Text>
-                            </View>
-                            <View style={styles.statsBox}>
-                                <Text style={styles.statsCount}></Text>
-                                <Text style={styles.statsLabel}></Text>
-                            </View>
-                            <View style={styles.statsBox}>
-                                <Text style={styles.statsCount}></Text>
-                                <Text style={styles.statsLabel}></Text>
-                            </View>
-                        </View> */}
+                            <Text style={styles.contact}><Ionicons name="mail-outline" color="grey" size={15} /> {data.employee.email}</Text>
+                            <Text style={styles.contact}><Ionicons name="call-outline" color="grey" size={15} />{data.employee.phone.includes('+') ? data.employee.phone : '+' + data.employee.phone}<Ionicons name="logo-whatsapp" color="grey" size={15} />{data.employee.whatsapp.includes('+') ? data.employee.whatsapp : '+' + data.employee.whatsapp}</Text>
+                        </View>
                     </View>
-                </View>
-                <View>
-
-                </View>
-                <ScrollView contentContainerStyle={styles.body}>
+                    <TopTab.Navigator
+                        name="Documents" tabBarPosition="top"
+                        initialRouteName="Documents"
+                        screenOptions={{
+                            tabBarIndicatorStyle: {
+                                backgroundColor: Colors.primary500,
+                            },
+                            tabBarInactiveTintColor: Colors.primary800,
+                            tabBarActiveTintColor: Colors.primary500,
+                            tabBarLabelStyle: { fontSize: 16, fontWeight: "bold" },
+                            tabBarStyle: {
+                                backgroundColor: Colors.colorWhite,
+                            },
+                        }}
+                    >
+                        <TopTab.Screen name="Documents" component={DocumentScreen} initialParams={{ documents: data.documents }} options={{ title: "Documents", params: { data } }} />
+                        <TopTab.Screen name="Status" component={DocumentScreen} options={{ title: "Status" }} />
+                        {/* <TopTab.Screen
+                            name="Calls" component={ChatScreen}
+                            options={{
+                                title: "Calls",
+                            }}
+                        /> */}
+                    </TopTab.Navigator>
+                    {/* <ScrollView contentContainerStyle={styles.body}>
                     {images.map((image, index) => (
                         <View key={index} style={styles.imageContainer}>
                             <Image style={styles.image} source={{ uri: image }} />
                         </View>
                     ))}
-                </ScrollView>
+                </ScrollView> */}
             </View>
+
         ))
     );
 }
