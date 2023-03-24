@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { ActivityIndicator, View, Text, StyleSheet, SafeAreaView, Image, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { AuthContext } from '../store/auth-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,21 +16,11 @@ function Profile({ navigation }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState([]);
     const authCtx = useContext(AuthContext);
-    const [name, setFullName] = useState('');
     const [userToken, setUserToken] = useState('');
 
     AsyncStorage.getItem("logged_user_token").then(token => {
         setUserToken(JSON.parse(token));
     });
-
-    const [images, setImages] = useState([
-        'https://www.bootdey.com/image/280x280/FF00FF/000000',
-        'https://www.bootdey.com/image/280x280/00FFFF/000000',
-        'https://www.bootdey.com/image/280x280/FF7F50/000000',
-        'https://www.bootdey.com/image/280x280/6495ED/000000',
-        'https://www.bootdey.com/image/280x280/DC143C/000000',
-        'https://www.bootdey.com/image/280x280/008B8B/000000',
-    ]);
 
     useEffect(() => {
         async function fetchData() {
@@ -56,6 +46,7 @@ function Profile({ navigation }) {
                 }
 
             } catch (error) {
+                console.log(error);
                 Toast.show(ERROR_MSG, Toast.LONG);
                 // AsyncStorage.removeItem('token');
                 // authCtx.logout;
@@ -63,6 +54,7 @@ function Profile({ navigation }) {
         }
         fetchData();
     }, []);
+
     return (
         (isLoading ? (
             <View style={styles.container}>
@@ -93,22 +85,9 @@ function Profile({ navigation }) {
                             },
                         }}
                     >
-                        <TopTab.Screen name="Documents" component={DocumentScreen} initialParams={{ documents: data.documents }} options={{ title: "Documents", params: { data } }} />
-                        <TopTab.Screen name="Status" component={DocumentScreen} options={{ title: "Status" }} />
-                        {/* <TopTab.Screen
-                            name="Calls" component={ChatScreen}
-                            options={{
-                                title: "Calls",
-                            }}
-                        /> */}
+                        <TopTab.Screen name="Documents" children={() => <DocumentScreen userData={data.documents} />} options={{ title: "Documents" }} />
+                        <TopTab.Screen name="Status" children={() => <DocumentScreen userData={data.documents} />} options={{ title: "Status" }} />
                     </TopTab.Navigator>
-                    {/* <ScrollView contentContainerStyle={styles.body}>
-                    {images.map((image, index) => (
-                        <View key={index} style={styles.imageContainer}>
-                            <Image style={styles.image} source={{ uri: image }} />
-                        </View>
-                    ))}
-                </ScrollView> */}
             </View>
 
         ))
