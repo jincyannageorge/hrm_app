@@ -2,24 +2,37 @@ import React from 'react';
 import { useState } from 'react';
 import { Text, View, Image, ScrollView, StyleSheet } from "react-native";
 
-function DocumentScreen({ userData }) {
-    console.log(userData);
-    const [images, setImages] = useState([
-        'https://www.bootdey.com/image/280x280/FF00FF/000000',
-        'https://www.bootdey.com/image/280x280/00FFFF/000000',
-        'https://www.bootdey.com/image/280x280/FF7F50/000000',
-        'https://www.bootdey.com/image/280x280/6495ED/000000',
-        'https://www.bootdey.com/image/280x280/DC143C/000000',
-        'https://www.bootdey.com/image/280x280/008B8B/000000',
-    ]);
+function DocumentScreen({ docData, immigrationData }) {
+    // console.log(docData.length);
+    // console.log(immigrationData.length);
+
     return (
-        (userData ? (
+        ((docData.length || immigrationData.length) ? (
             <View>
                 <ScrollView contentContainerStyle={styles.body}>
-                    {images.map((image, index) => (
-                        <View key={index} style={styles.imageContainer}>
-                            <Image style={styles.image} source={{ uri: image }} />
-                        </View>
+                    {docData.map((item, index) => (
+                        (['jpg', 'jpeg', 'png'].includes(item.file_type) ?
+                            (<View key={index} style={styles.imageContainer}>
+                                <Image style={styles.image} source={{ uri: item.fileUrl }} />
+                            </View>) : (item.file_type === "pdf" ?
+                                (<View key={index} style={styles.imageContainer}>
+                                    <Image style={styles.image} source={require('../assets/dummies/pdf_file_icon.png')} />
+                                </View>) : (['doc', 'docx'].includes(item.file_type) ?
+                                    (<View key={index} style={styles.imageContainer}>
+                                        <Image style={styles.image} source={require('../assets/dummies/pdf_file_icon.png')} />
+                                    </View>) : null)))
+                    ))}
+                    {immigrationData.map((i_item, i_index) => (
+                        (['jpg', 'jpeg', 'png'].includes(i_item.file_type) ?
+                            (<View key={i_index} style={styles.imageContainer}>
+                                <Image style={styles.image} source={{ uri: i_item.fileUrl }} />
+                            </View>) : (i_item.file_type === "pdf" ?
+                                (<View key={i_index} style={styles.imageContainer}>
+                                    <Image style={styles.image} source={require('../assets/dummies/pdf_file_icon.png')} />
+                                </View>) : (['doc', 'docx'].includes(i_item.file_type) ?
+                                    (<View key={i_index} style={styles.imageContainer}>
+                                        <Image style={styles.image} source={require('../assets/dummies/pdf_file_icon.png')} />
+                                    </View>) : null)))
                     ))}
                 </ScrollView>
             </View>
@@ -39,7 +52,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
     },
     imageContainer: {
-        width: '33%',
+        width: '36%',
         padding: 5,
     },
     image: {

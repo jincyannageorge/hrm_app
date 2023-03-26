@@ -85,8 +85,8 @@ function Profile({ navigation }) {
                             },
                         }}
                     >
-                        <TopTab.Screen name="Documents" children={() => <DocumentScreen userData={data.documents} />} options={{ title: "Documents" }} />
-                        <TopTab.Screen name="Status" children={() => <DocumentScreen userData={data.documents} />} options={{ title: "Status" }} />
+                        <TopTab.Screen name="Documents" children={() => <DocumentScreen docData={data.documents} immigrationData={data.immigrations} />} options={{ title: "Documents" }} />
+                        <TopTab.Screen name="Status" children={() => <DocumentScreen docData={data.documents} immigrationData={data.immigrations} />} options={{ title: "Status" }} />
                     </TopTab.Navigator>
             </View>
 
