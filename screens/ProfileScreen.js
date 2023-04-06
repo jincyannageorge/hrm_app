@@ -1,73 +1,72 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { Component } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import { AuthContext } from '../store/auth-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
+import { BASE_URL, ERROR_MSG } from '../constants/helpers';
 import LoadingOverlay from '../components/ui/LoadingOverlay';
+import ErrorOverlay from '../components/ui/ErrorOverlay';
 import Toast from 'react-native-simple-toast';
-import { BASE_URL } from '../constants/helpers';
-import { ERROR_MSG } from '../constants/helpers';
-import DocumentScreen from './DocumentScreen';
-import { Colors } from '../constants/styles';
+import { Ionicons } from '@expo/vector-icons';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { Colors } from '../constants/styles';
+import DocumentScreen from './DocumentScreen';
 
-const TopTab = createMaterialTopTabNavigator();
-function Profile({ navigation }) {
-    const [isLoading, setIsLoading] = useState(true);
-    const [data, setData] = useState([]);
-    const authCtx = useContext(AuthContext);
-    const [userToken, setUserToken] = useState('');
+class ProfileScreen extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            token: null,
+            userData: [],
+            isLoading: true,
+            isError: false,
+        };
+    }
 
-    AsyncStorage.getItem("logged_user_token").then(token => {
-        setUserToken(JSON.parse(token));
-    });
+    componentDidMount() {
+        this.fetchToken();
+    }
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const response = await fetch(`${BASE_URL}profile`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + userToken,
-                        'Content-Type': 'application/json',
-                        'token': userToken
-                    }
-                });
-                const output = await response.json();
-                if (output) {
-                    // console.log('response', output);
-                    if (output.status === "failed") {
-                        // AsyncStorage.removeItem('token');
-                        // authCtx.logout;
-                    } else {
-                        setData(output.data);
-                        setIsLoading(false);
-                    }
+    async fetchToken() {
+        try {
+            var userToken = await AsyncStorage.getItem('logged_user_token');
+            userToken = JSON.parse(userToken);
+            this.setState({ token: userToken });
+
+            const response = await fetch(`${BASE_URL}profile`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.state.token}`,
+                    'token': this.state.token
                 }
-
-            } catch (error) {
-                console.log(error);
+            });
+            const output = await response.json();
+            if (output.status === "success") {
+                this.setState({ userData: output.data });
+                this.setState({ isLoading: false });
+            } else {
+                this.setState({ isError: true });
                 Toast.show(ERROR_MSG, Toast.LONG);
-                // AsyncStorage.removeItem('token');
-                // authCtx.logout;
             }
+        } catch (error) {
+            console.error(error);
         }
-        fetchData();
-    }, []);
+    }
 
-    return (
-        (isLoading ? (
-            <View style={styles.container}>
-                <LoadingOverlay />
-            </View>
-        ) : (
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <View style={styles.headerContent}>
-                        <Image style={styles.avatar} source={{ uri: data.employee.img_url }} />
-                        <Text style={styles.name}>{data.employee.full_name}</Text>
-                            <Text style={styles.contact}><Ionicons name="mail-outline" color="grey" size={15} /> {data.employee.email}</Text>
-                            <Text style={styles.contact}><Ionicons name="call-outline" color="grey" size={15} />{data.employee.phone.includes('+') ? data.employee.phone : '+' + data.employee.phone}<Ionicons name="logo-whatsapp" color="grey" size={15} />{data.employee.whatsapp.includes('+') ? data.employee.whatsapp : '+' + data.employee.whatsapp}</Text>
+    render() {
+        const { token, userData, isLoading, isError } = this.state;
+        const TopTab = createMaterialTopTabNavigator();
+        if (isLoading) {
+            <LoadingOverlay />
+        } else if (isLoading) {
+            <ErrorOverlay />
+        } else {
+            return (
+                <View style={styles.container}>
+                    <View style={styles.header}>
+                        <View style={styles.headerContent}>
+                            <Image style={styles.avatar} source={{ uri: userData.employee.img_url }} />
+                            <Text style={styles.name}>{userData.employee.full_name}</Text>
+                            <Text style={styles.contact}><Ionicons name="mail-outline" color="grey" size={15} /> {userData.employee.email}</Text>
+                            <Text style={styles.contact}><Ionicons name="call-outline" color="grey" size={15} />{userData.employee.phone.includes('+') ? userData.employee.phone : '+' + userData.employee.phone}<Ionicons name="logo-whatsapp" color="grey" size={15} />{userData.employee.whatsapp.includes('+') ? userData.employee.whatsapp : '+' + userData.employee.whatsapp}</Text>
                         </View>
                     </View>
                     <TopTab.Navigator
@@ -85,16 +84,17 @@ function Profile({ navigation }) {
                             },
                         }}
                     >
-                        <TopTab.Screen name="Documents" children={() => <DocumentScreen docData={data.documents} immigrationData={data.immigrations} />} options={{ title: "Documents" }} />
-                        <TopTab.Screen name="Status" children={() => <DocumentScreen docData={data.documents} immigrationData={data.immigrations} />} options={{ title: "Status" }} />
+                        <TopTab.Screen name="Documents" children={() => <DocumentScreen docData={userData.documents} immigrationData={userData.immigrations} />} options={{ title: "Documents" }} />
+                        <TopTab.Screen name="Status" children={() => <DocumentScreen docData={userData.documents} immigrationData={userData.immigrations} />} options={{ title: "Status" }} />
                     </TopTab.Navigator>
-            </View>
+                </View>
+            );
+        }
 
-        ))
-    );
+    }
 }
 
-export default Profile;
+export default ProfileScreen;
 
 const styles = StyleSheet.create({
     container: {

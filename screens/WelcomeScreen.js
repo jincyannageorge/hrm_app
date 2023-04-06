@@ -4,13 +4,16 @@ import { AuthContext } from '../store/auth-context';
 import { MENU } from '../data/dummy-data';
 import MenuGridTile from '../components/DashBoard/MenuGridTile';
 
-function WelcomeScreen() {
+function WelcomeScreen({ navigation }) {
 	function renderMenu(itemData) {
+		let redirectScreen = "";
+		if (itemData.item.title === "My Requests") {
+			redirectScreen = navigation.navigate('RequestScreen');
+		}
 		return (
-			<MenuGridTile title={itemData.item.title} color={itemData.item.color} />
+			<MenuGridTile title={itemData.item.title} color={itemData.item.color} onPress={redirectScreen} />
 		);
 	}
-
 	return (
 		<FlatList data={MENU} keyExtractor={(item) => item.id} renderItem={renderMenu} numColumns={2} />
 	);
@@ -26,7 +29,6 @@ const styles = StyleSheet.create({
 		padding: 32,
 	},
 	title: {
-
 		fontSize: 20,
 		fontWeight: 'bold',
 		marginBottom: 8,

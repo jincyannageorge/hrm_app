@@ -12,6 +12,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import { Colors } from './constants/styles';
 import AuthContextProvider, { AuthContext } from './store/auth-context';
 import IconButton from './components/ui/IconButton';
+import RequestScreen from './screens/RequestScreen';
 
 const Stack = createNativeStackNavigator(),
 	Tab = createBottomTabNavigator();
@@ -47,6 +48,15 @@ function tabOption(authCtx, tabLabel, iconLabel) {
 	});
 }
 
+function HomeStackScreen() {
+	return (
+		<Stack.Navigator>
+			<Stack.Screen name="DashBoard" component={WelcomeScreen} options={{ headerShown: false }} />
+			<Stack.Screen name="RequestScreen" component={RequestScreen} />
+		</Stack.Navigator>
+	)
+}
+
 function AuthenticatedStack() {
 	const [currentUser, setCurrentUser] = useState('');
 	AsyncStorage.getItem("logged_user_name").then(user => {
@@ -66,7 +76,7 @@ function AuthenticatedStack() {
 		>
 			<Tab.Screen
 				name={user_name}
-				component={WelcomeScreen}
+				component={HomeStackScreen}
 				options={tabOption(authCtx, 'Home', 'ios-home')}
 			/>
 			<Tab.Screen

@@ -6,7 +6,7 @@ import { loggedUserName } from '../constants/helpers';
 import { loggedUserFullName } from '../constants/helpers';
 
 async function authenticate(mode, email, password) {
-	const url = `http://hrm.nuroil.com/api/login`;
+	const url = `http://192.168.1.123:8009/hrm/public/api/login`;
 
 	const response = await axios.post(url, {
 		email: email,

@@ -3,9 +3,6 @@ import { useState } from 'react';
 import { Text, View, Image, ScrollView, StyleSheet } from "react-native";
 
 function DocumentScreen({ docData, immigrationData }) {
-    // console.log(docData.length);
-    // console.log(immigrationData.length);
-
     return (
         ((docData.length || immigrationData.length) ? (
             <View>
