@@ -25,7 +25,31 @@ function AuthStack() {
 	);
 }
 
-function tabOption(authCtx, tabLabel, iconLabel) {
+function tabOption(authCtx, tabLabel, iconLabel, showHeader) {
+	return ({
+		tabBarLabel: tabLabel,
+		tabBarLabelStyle: {
+			fontWeight: "700",
+			fontSize: 13
+		},
+		tabBarActiveTintColor: '#d02b2d',
+		tabBarIcon: ({ tintColor }) => (
+			<IconButton icon={iconLabel} color={tintColor} size={20} />
+		),
+		headerShown: showHeader,
+		presentation: 'modal',
+		headerRight: ({ tintColor }) => (
+			<IconButton
+				icon="exit"
+				color={tintColor}
+				size={24}
+				onPress={authCtx.logout}
+			/>
+		),
+	});
+}
+
+function screenTabOption(tabLabel, authCtx) {
 	return ({
 		tabBarLabel: tabLabel,
 		tabBarLabelStyle: {
@@ -49,10 +73,21 @@ function tabOption(authCtx, tabLabel, iconLabel) {
 }
 
 function HomeStackScreen() {
+	const [currentUser, setCurrentUser] = useState('');
+	AsyncStorage.getItem("logged_user_name").then(user => {
+		setCurrentUser(JSON.parse(user));
+	});
+
+	const authCtx = useContext(AuthContext),
+		user_name = "Hello " + currentUser + ' !!';
 	return (
-		<Stack.Navigator>
-			<Stack.Screen name="DashBoard" component={WelcomeScreen} options={{ headerShown: false }} />
-			<Stack.Screen name="RequestScreen" component={RequestScreen} />
+		<Stack.Navigator screenOptions={{
+			headerStyle: { backgroundColor: Colors.primary500 },
+			headerTintColor: 'white',
+			contentStyle: { backgroundColor: Colors.primary100 },
+		}}>
+			<Stack.Screen name="DashBoard" component={WelcomeScreen} options={screenTabOption(user_name, authCtx)} />
+			<Stack.Screen name="RequestScreen" component={RequestScreen} options={screenTabOption('My Requests', authCtx)} />
 		</Stack.Navigator>
 	)
 }
@@ -67,23 +102,20 @@ function AuthenticatedStack() {
 		user_name = "Hello " + currentUser + ' !!';
 
 	return (
-		<Tab.Navigator
-			screenOptions={{
-				headerStyle: { backgroundColor: Colors.primary500 },
-				headerTintColor: 'white',
-				contentStyle: { backgroundColor: Colors.primary100 },
-			}}
-		>
+		<Tab.Navigator screenOptions={{
+			headerStyle: { backgroundColor: Colors.primary500 },
+			headerTintColor: 'white',
+			contentStyle: { backgroundColor: Colors.primary100 },
+		}}>
 			<Tab.Screen
 				name={user_name}
 				component={HomeStackScreen}
-				options={tabOption(authCtx, 'Home', 'ios-home')}
+				options={tabOption(authCtx, 'Home', 'ios-home', false)}
 			/>
 			<Tab.Screen
 				name="Profile"
 				component={ProfileScreen}
-				options={tabOption(authCtx, 'Profile', 'person')}
-				initialRouteName='Profile'
+				options={tabOption(authCtx, 'Profile', 'person', true)}
 			/>
 		</Tab.Navigator>
 	);

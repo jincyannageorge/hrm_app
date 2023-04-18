@@ -52,11 +52,11 @@ class ProfileScreen extends Component {
     }
 
     render() {
-        const { token, userData, isLoading, isError } = this.state;
+        const { userData, isLoading, isError } = this.state;
         const TopTab = createMaterialTopTabNavigator();
         if (isLoading) {
             <LoadingOverlay />
-        } else if (isLoading) {
+        } else if (isError) {
             <ErrorOverlay />
         } else {
             return (

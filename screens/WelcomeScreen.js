@@ -6,13 +6,15 @@ import MenuGridTile from '../components/DashBoard/MenuGridTile';
 
 function WelcomeScreen({ navigation }) {
 	function renderMenu(itemData) {
-		let redirectScreen = "";
 		if (itemData.item.title === "My Requests") {
-			redirectScreen = navigation.navigate('RequestScreen');
+			return (
+				<MenuGridTile title={itemData.item.title} color={itemData.item.color} onPress={() => navigation.navigate('RequestScreen')} />
+			);
+		} else {
+			return (
+				<MenuGridTile title={itemData.item.title} color={itemData.item.color} />
+			);
 		}
-		return (
-			<MenuGridTile title={itemData.item.title} color={itemData.item.color} onPress={redirectScreen} />
-		);
 	}
 	return (
 		<FlatList data={MENU} keyExtractor={(item) => item.id} renderItem={renderMenu} numColumns={2} />
